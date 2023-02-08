@@ -18,7 +18,13 @@ export const adapterInit = () => {
         }
     }))
 
-
+    menu.append(new MenuItem({
+        label: 'hidToc',
+        accelerator: 'm',
+        click: () => {
+            win.webContents.send("hidToc")
+        }
+    }))
 
 
     Menu.setApplicationMenu(menu)

@@ -1,5 +1,4 @@
 import { ipcRenderer } from 'electron';
-import { voidloadEpub } from '../epub';
 import { navAns } from '../epub/nav';
 import { tocAns } from '../epub/toc';
 import { bookdataStore } from '../pinia';
@@ -12,7 +11,6 @@ export const ipcEventInit = () => {
 
         tocAns(xmlDoc, fiePath)
     })
-
     
 
     ipcRenderer.on('navData', (_, data) => {

@@ -5,10 +5,10 @@ export const tocAns = (xmlDoc: Document, fielPath: string) => {
     let cover;
     let type;
 
-    const items = xmlDoc.getElementsByTagName('dc:rights')
-    if (items[0].innerHTML == 'voidlord') {
+    // const items = xmlDoc.getElementsByTagName('dc:rights')
+    // if (items[0].innerHTML == 'voidlord') {
         type = 'voidload'
-    }
+    // }
 
 
     switch (type) {
