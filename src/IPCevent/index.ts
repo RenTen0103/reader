@@ -11,7 +11,7 @@ export const ipcEventInit = () => {
 
         tocAns(xmlDoc, fiePath)
     })
-    
+
 
     ipcRenderer.on('navData', (_, data) => {
         let toc = navAns(data)
@@ -23,6 +23,15 @@ export const ipcEventInit = () => {
     ipcRenderer.on('dirmap', (_, data) => {
         const store = bookdataStore()
         store.dirmap.push(data)
+    })
+
+    ipcRenderer.on('nextPage', () => {
+        (document.getElementsByTagName('iframe')[0].contentWindow as any).nextPage()
+    })
+
+        
+    ipcRenderer.on('prePage', () => {
+        (document.getElementsByTagName('iframe')[0].contentWindow as any).prePage()
     })
 
 }

@@ -1,24 +1,30 @@
 <template>
-  <div class="toc" v-show="tocShow">
-    <div v-for="i, index in store.nav" class="tocItem" @click="tocClick(index)">
-      {{ i?.title }}
-    </div>
-  </div>
-  <div class="reader" id="drag_test">
-    <div v-show="!ishow">
-      拖拽书籍文件到此处
-    </div>
-
-    <iframe v-show="ishow" :src="location" frameborder="0" id="reader" :height="iheight + 'px'"
-      :width="iwidth + 'px'"></iframe>
-    <div class="progressbar" v-show="progressBarShow">
-      <div class="innerbar" :style="{
-        width: progress + '%'
-      }">
-
+  <div v-show="s">
+    <div class="toc" v-show="tocShow">
+      <div v-for="i, index in store.nav" class="tocItem" @click="tocClick(index)">
+        {{ i?.title }}
       </div>
     </div>
+    <div class="reader" id="drag_test">
+      <div v-show="!ishow">
+        拖拽书籍文件到此处,{{ text }}
+      </div>
+
+      <iframe v-show="ishow" :src="location" frameborder="0" id="reader" :height="iheight + 'px'"
+        :width="iwidth + 'px'"></iframe>
+      <div class="progressbar" v-show="progressBarShow && tocShow">
+        <div class="innerbar" :style="{
+          width: progress + '%'
+        }">
+
+        </div>
+      </div>
+    </div>
+    <div class="rate">
+      {{ Math.ceil(progress) > 100 ? 100 : Math.ceil(progress) }}%
+    </div>
   </div>
+
 </template>
 <script setup lang="ts">
 import { nextTick, onMounted, ref } from 'vue';
@@ -35,9 +41,9 @@ const tocShow = ref(false)
 const ishow = ref(false)
 const iheight = ref(100)
 const iwidth = ref(100)
-
-// const index = ref(0)
-
+const text = ref('')
+const s = ref(false)
+const isPage = ref(false)
 let iu: iframeUtils
 
 const tocClick = (index: number) => {
@@ -54,8 +60,6 @@ const tocClick = (index: number) => {
 
 const iframeAdaptive = () => {
 
-  console.log(window.innerHeight);
-  console.log(window.innerWidth);
   const r = document.getElementById('drag_test')
   if (r) {
     iheight.value = r.clientHeight
@@ -69,14 +73,45 @@ const updataRef = (href: string) => {
   location.value = href
 }
 
+const nextSection = () => {
+  let target = location.value
+  for (let index = 0; index < store.rawxHtml.length; index++) {
+    const element = store.rawxHtml[index];
+
+    if (element?.link == location.value && store.rawxHtml[index + 1] != undefined) {
+      target = store.rawxHtml[index + 1]?.link
+      break
+    }
+  }
+
+  location.value = target
+}
+
+const preSection = () => {
+  let target = location.value
+  for (let index = 0; index < store.rawxHtml.length; index++) {
+    const element = store.rawxHtml[index];
+
+    if (element?.link == location.value && store.rawxHtml[index - 1] != undefined) {
+      target = store.rawxHtml[index - 1]?.link
+      break
+    }
+  }
+
+
+
+  location.value = target
+}
 
 onMounted(() => {
   const i = document.getElementsByTagName('iframe')[0]
   document.getElementsByTagName('iframe')[0].onload = () => {
+
     progressBarShow.value = false
     if (!iu) {
 
       iu = new iframeUtils(i.contentWindow!)
+      iu.isPage = isPage.value
       //i1 onload事件挂载不上去，退而求其次了
       iu.addEvent('unload', (e: Event) => {
 
@@ -118,8 +153,21 @@ onMounted(() => {
 
         progressBarShow.value = true
       })
+      iu.addEvent("click", (e: PointerEvent) => {
+        const d = e.x / window.innerWidth
+        if (d < 0.3) {
+          preSection()
+        } else if (d > 0.7) {
+          nextSection()
+        };
+
+      })
+
     }
+
+
     iu.init()
+    iu.isPage = isPage.value
 
   }
 
@@ -130,32 +178,20 @@ onMounted(() => {
 
   ipcRenderer.on('next', () => {
 
-    let target = location.value
-    for (let index = 0; index < store.rawxHtml.length; index++) {
-      const element = store.rawxHtml[index];
-
-      if (element?.link == location.value && store.rawxHtml[index + 1] != undefined) {
-        target = store.rawxHtml[index + 1]?.link
-        break
-      }
-    }
-
-    location.value = target
+    nextSection()
 
   })
 
+  ipcRenderer.on('paging', () => {
+    console.log("P");
+
+    isPage.value = !isPage.value
+
+  })
+
+
   ipcRenderer.on('pre', () => {
-    let target = location.value
-    for (let index = 0; index < store.rawxHtml.length; index++) {
-      const element = store.rawxHtml[index];
-
-      if (element?.link == location.value && store.rawxHtml[index - 1] != undefined) {
-        target = store.rawxHtml[index - 1]?.link
-        break
-      }
-    }
-
-    location.value = target
+    preSection()
   })
 
   ipcRenderer.on('start', (_, p) => {
@@ -164,6 +200,14 @@ onMounted(() => {
     dirUtiles()
     tocShow.value = true
     location.value = store.rawxHtml[0].link
+  })
+
+  ipcRenderer.on('text', (_, p) => {
+    if (p[1] && p[1] != '.') {
+      ipcRenderer.send('filePath', p[1])
+    }
+
+    iframeAdaptive()
   })
 
   iframeAdaptive()
@@ -177,7 +221,7 @@ onMounted(() => {
       const files = e.dataTransfer?.files;
 
       if (files && files.length > 0) {
-        document.title = path.basename(files[0].name,'.epub')
+        document.title = path.basename(files[0].name, '.epub')
         const p = files[0].path;
         console.log('path:', p);
         ipcRenderer.send('filePath', p)
@@ -188,6 +232,10 @@ onMounted(() => {
       e.preventDefault();
     })
   }
+
+
+  ipcRenderer.send('ready')
+  s.value = true
 })
 
 
@@ -242,5 +290,11 @@ iframe {
 
 .toc::-webkit-scrollbar {
   display: none;
+}
+
+.rate {
+  position: fixed;
+  right: 5px;
+  bottom: 5px;
 }
 </style>

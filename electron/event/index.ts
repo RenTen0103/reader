@@ -22,10 +22,15 @@ export const eventInit = () => {
             if (path.basename(path.dirname(p)) == 'unziped') {
                 break
             }
-        } 
+        }
 
         startServer(p)
 
-        win.webContents.send('start',p)
+        win.webContents.send('start', p)
+    })
+
+
+    ipcMain.on('ready', () => {
+        win.webContents.send('text', process.argv)
     })
 }

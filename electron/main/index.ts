@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, ipcMain,Menu } from 'electron'
+import { app, BrowserWindow, shell, ipcMain, Menu } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
 import { eventInit } from '../event'
@@ -48,12 +48,12 @@ const indexHtml = join(process.env.DIST, 'index.html')
 async function createWindow() {
   win = new BrowserWindow({
     title: 'Main window',
-    icon: join(process.env.PUBLIC, 'favicon.ico'),  
+    icon: join(process.env.PUBLIC, 'favicon.ico'),
     autoHideMenuBar: true,
     webPreferences: {
       preload,
       webSecurity: false,
-      
+
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
       // Consider using contextBridge.exposeInMainWorld
       // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
@@ -85,6 +85,9 @@ async function createWindow() {
 
   eventInit()
   adapterInit()
+  // setTimeout(() => {
+  //   win.webContents.send('text', process.argv)
+  // }, 1000)
 
 }
 
