@@ -4,6 +4,9 @@ import { join } from 'node:path'
 import { eventInit } from '../event'
 import { adapterInit } from '../adapter'
 
+app.commandLine.appendSwitch("disable-site-isolation-trials");
+
+// app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
 // The built directory structure
 //
 // ├─┬ dist-electron
@@ -50,7 +53,7 @@ async function createWindow() {
     webPreferences: {
       preload,
       webSecurity: false,
-    
+      
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
       // Consider using contextBridge.exposeInMainWorld
       // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation

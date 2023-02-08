@@ -26,6 +26,7 @@ import { ipcRenderer } from 'electron';
 import { bookdataStore } from './pinia/index';
 import { dirUtiles } from './utils/dirUtil';
 import { iframeUtils } from './utils/iframeUtil';
+import path from 'path';
 const store = bookdataStore()
 const progress = ref(0)
 const location = ref('')
@@ -176,9 +177,10 @@ onMounted(() => {
       const files = e.dataTransfer?.files;
 
       if (files && files.length > 0) {
-        const path = files[0].path;
-        console.log('path:', path);
-        ipcRenderer.send('filePath', path)
+        document.title = path.basename(files[0].name,'.epub')
+        const p = files[0].path;
+        console.log('path:', p);
+        ipcRenderer.send('filePath', p)
       }
     })
 
