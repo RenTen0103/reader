@@ -1,7 +1,9 @@
-import { app, ipcMain } from 'electron';
+import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import { win } from '../main';
+import Store from 'electron-store'
+
 
 const defaultCss = `.progressbar {
   width: 80%;
@@ -45,24 +47,13 @@ const defaultCss = `.progressbar {
 }`
 
 
-let homeDir = path.dirname(app.getPath('exe'))
 export const cssLoad = () => {
-  fs.access(path.join(homeDir, '/config/style.css'), (e) => {
-    if (e) {
-      fs.mkdir(`${homeDir}/config`, err => {
-        if (err) {
-          console.error(err)
-        }
-      })
-      fs.writeFile(path.join(homeDir, '/config/style.css'), defaultCss, (e) => {
-        console.log(e);
-      })
-      win.webContents.send('cssload', defaultCss)
-    } else {
-
-      win.webContents.send('cssload', fs.readFileSync(path.join(homeDir, '/config/style.css')).toString())
-    }
-  })
-
-
+  const store = new Store();
+  let css = store.get('css')
+  if (css) {
+    win.webContents.send('cssload', css)
+  } else {
+    store.set('css', defaultCss)
+    win.webContents.send('cssload', defaultCss)
+  }
 }

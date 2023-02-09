@@ -6,7 +6,7 @@ import path from 'path';
 import { startServer } from '../express';
 import { configLoad } from '../configLoad';
 
-
+let lable = "编辑页面css"
 export const eventInit = () => {
     ipcMain.on('filePath', (_, p) => {
         fileReader(p)
@@ -38,7 +38,7 @@ export const eventInit = () => {
 
 
     ipcMain.on('contextMenu', () => {
-        Menu.buildFromTemplate([{
+                    Menu.buildFromTemplate([{
             label: '隐藏目录',
             accelerator: 'm',
             click: () => {
@@ -76,10 +76,23 @@ export const eventInit = () => {
             click: () => {
                 win.webContents.send("paging")
             }
+        }, {
+            label: lable,
+            click: () => {
+                if (lable == "编辑页面css") {
+                    lable = "返回阅读器"
+                    win.webContents.send('editCss')
+                } else {
+                    lable = "编辑页面css"
+                    win.webContents.send('returnReader')
+                }
+
+            }
         }
 
         ]).popup({
             window: win
         })
+
     })
 }
