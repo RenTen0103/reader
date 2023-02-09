@@ -3,6 +3,7 @@ import { release } from 'node:os'
 import { join } from 'node:path'
 import { eventInit } from '../event'
 import { adapterInit } from '../adapter'
+import { configLoad } from '../configLoad'
 
 app.commandLine.appendSwitch("disable-site-isolation-trials");
 
@@ -85,6 +86,7 @@ async function createWindow() {
 
   eventInit()
   adapterInit()
+
   // setTimeout(() => {
   //   win.webContents.send('text', process.argv)
   // }, 1000)

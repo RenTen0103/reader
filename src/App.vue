@@ -12,8 +12,8 @@
 
       <iframe v-show="ishow" :src="location" frameborder="0" id="reader" :height="iheight + 'px'"
         :width="iwidth + 'px'"></iframe>
-      <div class="progressbar" v-show="progressBarShow && tocShow">
-        <div class="innerbar" :style="{
+      <div class="progressbar" v-show="tocShow">
+        <div class="innerBar" :style="{
           width: progress + '%'
         }">
 
@@ -33,6 +33,7 @@ import { bookdataStore } from './pinia/index';
 import { dirUtiles } from './utils/dirUtil';
 import { iframeUtils } from './utils/iframeUtil';
 import path from 'path';
+import { configLoad } from './utils/configLoader';
 const store = bookdataStore()
 const progress = ref(0)
 const location = ref('')
@@ -65,7 +66,6 @@ const iframeAdaptive = () => {
     iheight.value = r.clientHeight
     iwidth.value = r.clientWidth
   }
-
 }
 
 
@@ -104,7 +104,13 @@ const preSection = () => {
 }
 
 onMounted(() => {
+  configLoad()
+  store.clrear()
+
+  let menuShow = false
+
   const i = document.getElementsByTagName('iframe')[0]
+
   document.getElementsByTagName('iframe')[0].onload = () => {
 
     progressBarShow.value = false
@@ -154,6 +160,10 @@ onMounted(() => {
         progressBarShow.value = true
       })
       iu.addEvent("click", (e: PointerEvent) => {
+        if (menuShow) {
+          menuShow = false
+          return
+        }
         const d = e.x / window.innerWidth
         if (d < 0.3) {
           preSection()
@@ -162,7 +172,11 @@ onMounted(() => {
         };
 
       })
-
+      iu.addEvent('contextmenu', (e) => {
+        menuShow = true
+        e.preventDefault()
+        ipcRenderer.send('contextMenu')
+      })
     }
 
 
@@ -214,6 +228,11 @@ onMounted(() => {
 
   window.addEventListener('resize', iframeAdaptive)
 
+  window.addEventListener('contextmenu', (e) => {
+    e.preventDefault()
+    ipcRenderer.send('contextMenu')
+  })
+
   const dragWrapper = document.getElementById("drag_test");
   if (dragWrapper != null) {
     dragWrapper.addEventListener("drop", (e) => {
@@ -241,28 +260,6 @@ onMounted(() => {
 
 </script>
 <style scoped>
-.progressbar {
-  width: 80%;
-  height: 20px;
-  background-color: #ffccff;
-  position: fixed;
-  left: 10%;
-  bottom: 20px;
-}
-
-.innerbar {
-  background-color: black;
-  margin-left: 0;
-  height: 100%;
-
-}
-
-iframe {
-  border: 0;
-}
-
-
-
 .reader {
   width: 100vw;
   height: 100vh;
@@ -270,31 +267,7 @@ iframe {
   overflow: hidden;
 }
 
-.toc {
-  width: 200px;
-  height: 400px;
-  background-color: beige;
-  opacity: 0.7;
-  border: 1px solid black;
-  position: fixed;
-  overflow: scroll;
-}
-
-.tocItem {
-  width: 90%;
-  margin-left: 5%;
-  margin-top: 3px;
-  border-bottom: 1px solid black;
-  cursor: pointer;
-}
-
 .toc::-webkit-scrollbar {
   display: none;
-}
-
-.rate {
-  position: fixed;
-  right: 5px;
-  bottom: 5px;
 }
 </style>
