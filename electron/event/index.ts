@@ -6,7 +6,8 @@ import path from 'path';
 import { startServer } from '../express';
 import { configLoad } from '../configLoad';
 
-let lable = "编辑页面css"
+let lable = "设置"
+let lable2 = "显示目录"
 export const eventInit = () => {
     ipcMain.on('filePath', (_, p) => {
         fileReader(p)
@@ -38,10 +39,13 @@ export const eventInit = () => {
 
 
     ipcMain.on('contextMenu', () => {
-                    Menu.buildFromTemplate([{
-            label: '隐藏目录',
+        Menu.buildFromTemplate([{
+            label: lable2,
             accelerator: 'm',
             click: () => {
+                if (lable2 == "显示目录") {
+                    lable2 = "隐藏目录"
+                }else lable2 = "显示目录"
                 win.webContents.send("hidToc")
             }
         },
@@ -71,26 +75,24 @@ export const eventInit = () => {
                 win.webContents.send("nextPage")
             }
         }, {
-            label: '分页',
-            accelerator: 'p',
-            click: () => {
-                win.webContents.send("paging")
-            }
-        }, {
             label: lable,
             click: () => {
-                if (lable == "编辑页面css") {
+                if (lable == "设置") {
                     lable = "返回阅读器"
-                    win.webContents.send('editCss')
+                    win.webContents.send('setting')
                 } else {
-                    lable = "编辑页面css"
+                    lable = "设置"
                     win.webContents.send('returnReader')
                 }
 
             }
         }
 
-        ]).popup({
+        ]).addListener('menu-will-show', () => {
+            win.webContents.send('menuShow')
+        }).addListener('menu-will-close', () => {
+            win.webContents.send('menuClose')
+        }).popup({
             window: win
         })
 

@@ -7,12 +7,12 @@
         </div>
         <div class="reader" id="drag_test">
             <div v-show="!ishow">
-                拖拽书籍文件到此处,{{ text }}
+                拖拽书籍文件到此处{{ text }}
             </div>
 
             <iframe v-show="ishow" :src="location" frameborder="0" id="reader" :height="iheight + 'px'"
                 :width="iwidth + 'px'"></iframe>
-            <div class="progressbar" v-show="tocShow">
+            <div class="progressbar" v-show="tocShow && !isPage">
                 <div class="innerBar" :style="{
                     width: progress + '%'
                 }">
@@ -20,20 +20,25 @@
                 </div>
             </div>
         </div>
-        <div class="rate">
-            {{ Math.ceil(progress) > 100 ? 100 : Math.ceil(progress) }}%
+        <div class="rate" v-show=ishow>
+            {{
+    isPage?''+(currentPage + 1) + '/' + MaxPageIndex: ''+(Math.ceil(progress) > 100 ? 100 : Math.ceil(progress))
+        + '%'
+            }}
         </div>
     </div>
 
 </template>
 <script setup lang="ts">
-import { nextTick, onMounted, ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { ipcRenderer } from 'electron';
 import { bookdataStore } from '../pinia/index';
 import { dirUtiles } from '../utils/dirUtil';
 import { iframeUtils } from '../utils/iframeUtil';
 import path from 'path';
-import { configLoad } from '../utils/configLoader';
+import ElectronStore from 'electron-store';
+
+
 const store = bookdataStore()
 const progress = ref(0)
 const location = ref('')
@@ -44,10 +49,18 @@ const iheight = ref(100)
 const iwidth = ref(100)
 const text = ref('')
 const s = ref(false)
-const isPage = ref(false)
+const isPage = ref(true)
+const currentPage = ref(1)
+const MaxPageIndex = ref(1)
+let userChange = true
+
 let iu: iframeUtils
 
+
+
 const tocClick = (index: number) => {
+    iu.isPre = false
+
     const orgTocRef = store.nav[index].href
 
 
@@ -56,7 +69,6 @@ const tocClick = (index: number) => {
     })
 
     location.value = (targetxHtml.link);
-
 }
 
 const iframeAdaptive = () => {
@@ -76,10 +88,34 @@ const iframeAdaptive = () => {
     }
 }
 
+// const updataProgress = () => {
+//     let cP = (document.getElementsByTagName('iframe')[0].contentWindow as any).currentPage1
+//     currentPage.value = cP ? cP : 0
+//     let mP = (document.getElementsByTagName('iframe')[0].contentWindow as any).maxPageIndex
+//     MaxPageIndex.value = mP ? mP : 0
+// }
+
 
 const updataRef = (href: string) => {
     location.value = href
 }
+
+const nextPage = () => {
+
+    if (!(document.getElementsByTagName('iframe')[0].contentWindow as any).nextPage()) {
+        nextSection()
+        iu.isPre = false
+    }
+
+}
+
+const prePage = () => {
+    if (!(document.getElementsByTagName('iframe')[0].contentWindow as any).prePage()) {
+        preSection()
+        iu.isPre = true
+    }
+}
+
 
 const nextSection = () => {
     let target = location.value
@@ -95,6 +131,10 @@ const nextSection = () => {
     location.value = target
 }
 
+const newSectionReady = () => {
+    userChange = false
+    // updataProgress()
+}
 const preSection = () => {
     let target = location.value
     for (let index = 0; index < store.rawxHtml.length; index++) {
@@ -112,7 +152,27 @@ const preSection = () => {
 }
 
 onMounted(() => {
+
+    (window as any)._setMaxPageIndex = (m: number) => {
+
+        MaxPageIndex.value = m
+    }
+
+
+    (window as any)._setCurrentPageIndex = (m: number) => {
+
+        currentPage.value = m
+    }
+
+
+    const eStore = new ElectronStore()
+
+    let ip = <boolean>eStore.get('isPage')
+
+    isPage.value = ip ? ip : false
+
     iframeAdaptive()
+
     store.clrear()
 
     let menuShow = false
@@ -131,17 +191,16 @@ onMounted(() => {
             //i1 onload事件挂载不上去，退而求其次了
             iu.addEvent('unload', (e: Event) => {
 
+                if (!userChange) {
+                    iu.isPre = false
+                }
+
                 let oref = (<Document>(e?.target))?.URL;
-                console.log(oref);
-                console.log(i.contentWindow?.location.href);
 
                 if (oref != i.contentWindow?.location.href) {
                     if (i.contentWindow != null) {
                         updataRef(i.contentWindow?.location.href)
-                        console.log(oref);
-                        console.log(i.contentWindow?.location.href);
-
-
+                        newSectionReady()
                     }
 
                 } else {
@@ -149,9 +208,10 @@ onMounted(() => {
 
                         if (oref != i.contentWindow?.location.href) {
                             if (i.contentWindow != null) {
-
                                 updataRef(i.contentWindow.location.href)
                                 clearInterval(w)
+                                newSectionReady()
+
                             }
 
                         }
@@ -169,21 +229,29 @@ onMounted(() => {
 
                 progressBarShow.value = true
             })
+
+
             iu.addEvent("click", (e: PointerEvent) => {
-                if (menuShow) {
-                    menuShow = false
-                    return
-                }
+                userChange = true
+
+                if (menuShow) return
+
                 const d = e.x / window.innerWidth
                 if (d < 0.3) {
-                    preSection()
+                    if (isPage.value) {
+                        prePage()
+                    } else preSection()
                 } else if (d > 0.7) {
-                    nextSection()
+                    if (isPage.value) {
+                        nextPage()
+                    } else nextSection()
                 };
 
             })
+
+
             iu.addEvent('contextmenu', (e) => {
-                menuShow = true
+                // menuShow = true
                 e.preventDefault()
                 ipcRenderer.send('contextMenu')
             })
@@ -195,34 +263,48 @@ onMounted(() => {
 
     }
 
+    ipcRenderer.on('menuClose', () => {
+        menuShow = false
+    })
+
+    ipcRenderer.on('menuShow', () => {
+        menuShow = true
+    })
 
     ipcRenderer.on('hidToc', () => {
         tocShow.value = !tocShow.value
     })
 
-    ipcRenderer.on('next', () => {
+    ipcRenderer.on('nextPage', () => {
+        console.log(1);
 
+        userChange = true
+        if (isPage.value) {
+            nextPage()
+        } else nextSection()
+
+    })
+    ipcRenderer.on('prePage', () => {
+        userChange = true
+        if (isPage.value) {
+            prePage()
+        } else preSection()
+    })
+
+    ipcRenderer.on('next', () => {
         nextSection()
 
     })
-
-    ipcRenderer.on('paging', () => {
-        console.log("P");
-
-        isPage.value = !isPage.value
-
-    })
-
-
     ipcRenderer.on('pre', () => {
         preSection()
     })
+
+
 
     ipcRenderer.on('start', (_, p) => {
         store.path = p
         ishow.value = true
         dirUtiles()
-        tocShow.value = true
         location.value = store.rawxHtml[0].link
     })
 

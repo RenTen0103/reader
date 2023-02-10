@@ -25,17 +25,17 @@ export const ipcEventInit = () => {
         store.dirmap.push(data)
     })
 
-    ipcRenderer.on('nextPage', () => {
-        (document.getElementsByTagName('iframe')[0].contentWindow as any).nextPage()
-    })
+    // ipcRenderer.on('nextPage', () => {
+    //     (document.getElementsByTagName('iframe')[0].contentWindow as any).nextPage()
+    // })
 
 
-    ipcRenderer.on('prePage', () => {
-        (document.getElementsByTagName('iframe')[0].contentWindow as any).prePage()
-    })
+    // ipcRenderer.on('prePage', () => {
+    //     (document.getElementsByTagName('iframe')[0].contentWindow as any).prePage()
+    // })
 
-    ipcRenderer.on('editCss', () => {
-        router.push('/editCss')
+    ipcRenderer.on('setting', () => {
+        router.push('/setting')
     })
 
 

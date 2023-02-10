@@ -1,5 +1,11 @@
+@font-face {
+  font-family: pf;
+  src: url(./assets/font/PingFang.ttc);
+}
+
 body{
   margin: 0;
   padding: 0;
   border: 0;
+  font-family: pf;  
 }
