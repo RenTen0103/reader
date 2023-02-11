@@ -11,7 +11,8 @@ export const dirUtiles = () => {
             console.log(idref);
 
         }
-        e.link = (fulldir?.replace(store.path, 'http://localhost:12356').replaceAll('\\', '/'));
+
+        e.link = fulldir?.replace(store.path, 'http://localhost:12356').replaceAll('\\', '/');
 
     })
 

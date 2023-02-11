@@ -1,41 +1,31 @@
 <template>
-    <div v-show="s">
-        <div class="toc" v-show="tocShow">
-            <div v-for="i, index in store.nav" class="tocItem" @click="tocClick(index)">
-                {{ i?.title }}
-            </div>
-        </div>
-        <div class="reader" id="drag_test">
-            <div v-show="!ishow">
-                拖拽书籍文件到此处{{ text }}
-            </div>
-
-            <iframe v-show="ishow" :src="location" frameborder="0" id="reader" :height="iheight + 'px'"
-                :width="iwidth + 'px'"></iframe>
-            <div class="progressbar" v-show="tocShow && !isPage">
-                <div class="innerBar" :style="{
-                    width: progress + '%'
-                }">
-
-                </div>
-            </div>
-        </div>
-        <div class="rate" v-show=ishow>
-            {{
-    isPage?''+(currentPage + 1) + '/' + MaxPageIndex: ''+(Math.ceil(progress) > 100 ? 100 : Math.ceil(progress))
-        + '%'
-            }}
+    <div class="toc" v-show="tocShow">
+        <div v-for="i, index in store.nav" class="tocItem" @click="tocClick(index)">
+            {{ i?.title }}
         </div>
     </div>
+    <div class="reader" id="drag_test">
+        <iframe :src="location" frameborder="0" id="reader" :height="iheight + 'px'" :width="iwidth + 'px'"></iframe>
+        <div class="progressbar" v-show="tocShow && !isPage">
+            <div class="innerBar" :style="{
+                width: progress + '%'
+            }">
 
+            </div>
+        </div>
+    </div>
+    <div class="rate">
+        {{
+    isPage?''+(currentPage + 1) + '/' + MaxPageIndex: ''+(Math.ceil(progress) > 100 ? 100 : Math.ceil(progress))
+        + '%'
+        }}
+    </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, onBeforeUnmount } from 'vue';
 import { ipcRenderer } from 'electron';
 import { bookdataStore } from '../pinia/index';
-import { dirUtiles } from '../utils/dirUtil';
 import { iframeUtils } from '../utils/iframeUtil';
-import path from 'path';
 import ElectronStore from 'electron-store';
 
 
@@ -44,10 +34,10 @@ const progress = ref(0)
 const location = ref('')
 const progressBarShow = ref(false)
 const tocShow = ref(false)
-const ishow = ref(false)
+
 const iheight = ref(100)
 const iwidth = ref(100)
-const text = ref('')
+
 const s = ref(false)
 const isPage = ref(true)
 const currentPage = ref(1)
@@ -102,6 +92,8 @@ const updataRef = (href: string) => {
 
 const nextPage = () => {
 
+    console.log(2);
+
     if (!(document.getElementsByTagName('iframe')[0].contentWindow as any).nextPage()) {
         nextSection()
         iu.isPre = false
@@ -118,7 +110,14 @@ const prePage = () => {
 
 
 const nextSection = () => {
-    let target = location.value
+    // console.log(3);
+    // console.log(store.$state);
+
+    let target = decodeURI(location.value)
+
+    console.log(target);
+
+
     for (let index = 0; index < store.rawxHtml.length; index++) {
         const element = store.rawxHtml[index];
 
@@ -133,7 +132,6 @@ const nextSection = () => {
 
 const newSectionReady = () => {
     userChange = false
-    // updataProgress()
 }
 const preSection = () => {
     let target = location.value
@@ -152,6 +150,8 @@ const preSection = () => {
 }
 
 onMounted(() => {
+
+    ipcRenderer.send('startServer', store.path);
 
     (window as any)._setMaxPageIndex = (m: number) => {
 
@@ -173,7 +173,7 @@ onMounted(() => {
 
     iframeAdaptive()
 
-    store.clrear()
+    // store.clrear()
 
     let menuShow = false
 
@@ -276,7 +276,7 @@ onMounted(() => {
     })
 
     ipcRenderer.on('nextPage', () => {
-        console.log(1);
+        // console.log(1);
 
         userChange = true
         if (isPage.value) {
@@ -301,12 +301,6 @@ onMounted(() => {
 
 
 
-    ipcRenderer.on('start', (_, p) => {
-        store.path = p
-        ishow.value = true
-        dirUtiles()
-        location.value = store.rawxHtml[0].link
-    })
 
     ipcRenderer.on('text', (_, p) => {
         if (p[1] && p[1] != '.') {
@@ -316,39 +310,36 @@ onMounted(() => {
         iframeAdaptive()
     })
 
-
+    location.value = store.rawxHtml[0].link
 
     window.addEventListener('resize', iframeAdaptive)
 
-    // window.addEventListener('contextmenu', (e) => {
-    //     e.preventDefault()
-    //     ipcRenderer.send('contextMenu')
-    // })
 
-    const dragWrapper = document.getElementById("drag_test");
-    if (dragWrapper != null) {
-        dragWrapper.addEventListener("drop", (e) => {
-            e.preventDefault();
-            const files = e.dataTransfer?.files;
+    // const dragWrapper = document.getElementById("drag_test");
+    // if (dragWrapper != null) {
+    //     dragWrapper.addEventListener("drop", (e) => {
+    //         e.preventDefault();
+    //         const files = e.dataTransfer?.files;
 
-            if (files && files.length > 0) {
-                document.title = path.basename(files[0].name, '.epub')
-                const p = files[0].path;
-                console.log('path:', p);
-                ipcRenderer.send('filePath', p)
-            }
-        })
+    //         if (files && files.length > 0) {
+    //             document.title = path.basename(files[0].name, '.epub')
+    //             const p = files[0].path;
+    //             console.log('path:', p);
+    //             ipcRenderer.send('filePath', p)
+    //         }
+    //     })
 
-        dragWrapper.addEventListener("dragover", (e) => {
-            e.preventDefault();
-        })
-    }
-
-
+    //     dragWrapper.addEventListener("dragover", (e) => {
+    //         e.preventDefault();
+    //     })
+    // }
 
     s.value = true
 })
 
+onBeforeUnmount(() => {
+    ipcRenderer.send('stopServer')
+})
 
 </script>
 <style scoped>

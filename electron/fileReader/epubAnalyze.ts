@@ -16,13 +16,21 @@ function walkSync(currentDirPath: string, callback: (...args: any[]) => void) {
 
 export const epubAnalyze = (p: string) => {
 
-    walkSync(p, function (filePath, stat) { 
+    walkSync(p, function (filePath, stat) {
         win.webContents.send('dirmap', filePath)
         if (path.extname(filePath) == '.opf') {
-            console.log(filePath);
+
+
             const fileData = fs.readFileSync(filePath).toString()
-     
+
             win.webContents.send('opfData', fileData, filePath)
+        } else {
+            if (['.webp', '.png', '.jpg', '.jpeg'].includes(path.extname(filePath))) {
+                if (path.basename(filePath).indexOf('cover') != -1) {
+                    win.webContents.send('cover', filePath)
+                }
+            }
+
         }
     });
 

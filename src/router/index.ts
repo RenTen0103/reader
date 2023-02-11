@@ -6,8 +6,11 @@ import {
 import editCssVue from "../view/editCss.vue";
 import bookReaderVue from '../view/bookReader.vue'
 import settingVue from "../view/setting.vue";
+import bookShowCaseVue from '../view/bookShowCase.vue'
+import bookviewVue from "../view/bookview.vue";
+
 const routes: Array<RouteRecordRaw> = [{
-    path: '/',
+    path: '/bookReader',
     component: bookReaderVue
 }, {
     path: '/editCss',
@@ -16,6 +19,12 @@ const routes: Array<RouteRecordRaw> = [{
 {
     path: '/setting',
     component: settingVue
+}, {
+    path: "/",
+    component: bookShowCaseVue
+}, {
+    path: '/bookView',
+    component: bookviewVue
 }
 ]
 const router = createRouter({

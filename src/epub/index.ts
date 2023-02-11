@@ -1,6 +1,10 @@
 import path from 'path'
 import { ipcRenderer } from 'electron';
 import { bookdataStore } from '../pinia';
+export const ansEpub = (p: string) => {
+    ipcRenderer.send('filePath', p)
+}
+
 
 export const voidloadEpub = (xmlDoc: Document, filePath: string) => {
     let rawxHtml = [];
@@ -45,7 +49,9 @@ export const voidloadEpub = (xmlDoc: Document, filePath: string) => {
     const store = bookdataStore()
     store.rawxHtml = rawxHtml
 
-    ipcRenderer.send('bookReady', filePath)
-    console.log(store.$state);
+    console.log({...store.$state});
+
+
+    // ipcRenderer.send('bookReady', filePath)
 
 }

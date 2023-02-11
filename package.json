@@ -1,6 +1,6 @@
 {
   "name": "simple-bookreader",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "main": "dist-electron/main/index.js",
   "description": "a simple reader",
   "author": "renren <299926472@qq.com>",

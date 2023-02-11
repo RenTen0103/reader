@@ -4,7 +4,8 @@ import { join } from 'node:path'
 import { eventInit } from '../event'
 import { adapterInit } from '../adapter'
 import { configLoad } from '../configLoad'
-
+import ElectronStore from 'electron-store'
+ElectronStore.initRenderer();
 app.commandLine.appendSwitch("disable-site-isolation-trials");
 
 // app.commandLine.appendSwitch('disable-features', 'OutOfBlinkCors');
@@ -88,7 +89,12 @@ async function createWindow() {
   adapterInit()
 
   // setTimeout(() => {
-  //   win.webContents.send('text', process.argv)
+  //   const nw = new BrowserWindow({
+  //     title: 'texxt',
+  //     autoHideMenuBar: true,
+  //   })
+
+  //   nw.loadFile('public/preview.html')
   // }, 1000)
 
 }
