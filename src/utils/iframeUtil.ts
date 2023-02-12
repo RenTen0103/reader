@@ -104,6 +104,12 @@ window.prePage = ()=>{
     }
 }
 
+window.changePageTo = (m)=>{
+    if(cssContent[m]){
+        changePage(m)
+    }
+}
+
 `
 
 

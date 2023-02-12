@@ -32,8 +32,7 @@ const title = ref('测试标题')
 const read = () => {
     const bdstore = bookdataStore()
     bdstore.$state = (estore.get(props.md5) as any)
-    console.log(bdstore.$state);
-    // ipcRenderer.send('startServer', bdstore.path)
+    // console.log(bdstore.$state);
     router.push('/bookReader')
 }
 

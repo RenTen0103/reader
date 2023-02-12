@@ -10,6 +10,7 @@ export const bookdataStore = defineStore('main', {
         let nav: any[] = []
         let cover = ''
         let title = ''
+        let history: number[] = []
         return {
             rawxHtml,
             nav,
@@ -17,7 +18,8 @@ export const bookdataStore = defineStore('main', {
             dirmap,
             md5,
             cover,
-            title
+            title,
+            history
         }
     },
     actions: {
@@ -38,9 +40,15 @@ export const bookdataStore = defineStore('main', {
                 eStore.set('booklist', [this.md5])
             } else {
                 const bookList = <Array<string>>eStore.get('booklist')
-                bookList.push(this.md5)
+                if (bookList.indexOf(this.md5) == -1) {
+                    bookList.push(this.md5)
+                }
+
                 eStore.set('booklist', bookList)
             }
+
+            console.log(eStore.get(this.md5));
+
 
             this.$reset()
         }

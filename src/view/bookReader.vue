@@ -22,11 +22,12 @@
     </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref, onBeforeUnmount } from 'vue';
+import { onMounted, ref, onBeforeUnmount, nextTick } from 'vue';
 import { ipcRenderer } from 'electron';
 import { bookdataStore } from '../pinia/index';
 import { iframeUtils } from '../utils/iframeUtil';
 import ElectronStore from 'electron-store';
+import e from 'express';
 
 
 const store = bookdataStore()
@@ -92,7 +93,6 @@ const updataRef = (href: string) => {
 
 const nextPage = () => {
 
-    console.log(2);
 
     if (!(document.getElementsByTagName('iframe')[0].contentWindow as any).nextPage()) {
         nextSection()
@@ -110,8 +110,7 @@ const prePage = () => {
 
 
 const nextSection = () => {
-    // console.log(3);
-    // console.log(store.$state);
+
 
     let target = decodeURI(location.value)
 
@@ -149,7 +148,102 @@ const preSection = () => {
     location.value = target
 }
 
+// const recodeHistory = () => {
+//     let target = iu?.window?.document.elementFromPoint(0, 0);
+//     setInterval(() => {
+//         target = iu.window.document.elementFromPoint(iu.window.innerWidth / 2, iu.window.innerHeight / 2);
+//         console.log(target);
+//         let domBody = iu.window.document.body
+//         // console.log(domBody.contains(target));
+//         if (target != null) {
+//             let re: number[] = []
+//             getRecord(domBody, target, re)
+//             console.log(re);
+
+//         }
+
+
+
+//     }, 10000)
+
+// }
+
+
+const getRecord = (dom: Element, target: Element, r: number[]) => {
+    if (dom.children.length != 0 && dom != target) {
+        for (let index = 0; index < dom.children.length; index++) {
+            const element = dom.children[index];
+            if (element.contains(target)) {
+                r.push(index)
+                console.log(element);
+
+                getRecord(element, target, r)
+                break
+            }
+        }
+    }
+
+    // dom.children
+}
+
+onBeforeUnmount(() => {
+    let target = iu.window.document.elementFromPoint(iu.window.innerWidth / 2, 30);
+    let domBody = iu.window.document.body
+    let r: number[] = [];
+    for (let index = 0; index < store.rawxHtml.length; index++) {
+        const element = store.rawxHtml[index];
+
+        if (element?.link == location.value) {
+            r.push(index)
+            break
+        }
+    }
+
+    console.log("location:", r);
+
+    if (target != null) {
+        getRecord(domBody, target, r)
+        console.log(r);
+
+        store.history = r
+        store.storeLocal()
+    }
+
+    ipcRenderer.send('stopServer')
+})
+
+const reloadHistory = () => {
+    if (store.history.length > 1) {
+        setTimeout(() => {
+            nextTick(() => {
+                let target = <Element>iu?.window.document.body
+                console.log(target);
+
+                for (let index = 1; index < store.history.length; index++) {
+                    target = target.children[store.history[index]]
+                }
+                // store.history[1]
+                if (isPage.value) {
+                    while (!target.getAttribute('pageID')) {
+                        target = target.parentElement!
+                    }
+
+                    let id = target.getAttribute('pageID');
+                    console.log("id", id);
+
+                    (iu.window as any).changePageTo(parseInt(id!) - 1)
+                } else (target.scrollIntoView());
+            })
+        }, 500)
+
+
+
+    }
+}
+
 onMounted(() => {
+
+
 
     ipcRenderer.send('startServer', store.path);
 
@@ -162,6 +256,7 @@ onMounted(() => {
     (window as any)._setCurrentPageIndex = (m: number) => {
 
         currentPage.value = m
+
     }
 
 
@@ -310,36 +405,20 @@ onMounted(() => {
         iframeAdaptive()
     })
 
-    location.value = store.rawxHtml[0].link
+    if (store.history.length != 0) {
+        location.value = store.rawxHtml[store.history[0]].link
+        reloadHistory()
+    } else location.value = store.rawxHtml[0].link
+
+
 
     window.addEventListener('resize', iframeAdaptive)
 
 
-    // const dragWrapper = document.getElementById("drag_test");
-    // if (dragWrapper != null) {
-    //     dragWrapper.addEventListener("drop", (e) => {
-    //         e.preventDefault();
-    //         const files = e.dataTransfer?.files;
-
-    //         if (files && files.length > 0) {
-    //             document.title = path.basename(files[0].name, '.epub')
-    //             const p = files[0].path;
-    //             console.log('path:', p);
-    //             ipcRenderer.send('filePath', p)
-    //         }
-    //     })
-
-    //     dragWrapper.addEventListener("dragover", (e) => {
-    //         e.preventDefault();
-    //     })
-    // }
-
     s.value = true
 })
 
-onBeforeUnmount(() => {
-    ipcRenderer.send('stopServer')
-})
+
 
 </script>
 <style scoped>

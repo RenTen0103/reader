@@ -23,7 +23,7 @@ const list: Ref<Array<string>> = ref([])
 onMounted(() => {
     const eStore = new store()
     const bdstore = bookdataStore()
-    // eStore.clear()
+
     bdstore.clrear()
     list.value = <Array<string>>eStore.get('booklist')
 
