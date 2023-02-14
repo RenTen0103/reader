@@ -3,6 +3,11 @@ import { Express } from 'express-serve-static-core';
 
 let server;
 export const startServer = (p: string) => {
+    console.log("path",p);
+    if (p == '') {
+        return
+    }
+    
     let app: Express = express();
 
 

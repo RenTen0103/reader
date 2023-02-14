@@ -110,13 +110,29 @@ window.changePageTo = (m)=>{
     }
 }
 
+        let imgs = document.getElementsByTagName('img')
+        for (let index = 0; index < imgs.length; index++) {
+            const element = imgs[index];
+            element.addEventListener('click',()=>{
+                window.parent._previewpic(element.currentSrc)
+            })
+        }
+
 `
 
 
         let script = document.createElement('script')
         script.innerHTML = a
         this.window.document.getElementsByTagName('head').item(0)?.appendChild(script);
+
+
+
+
     }
+
+
+
+
 
 }
 

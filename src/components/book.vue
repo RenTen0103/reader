@@ -30,10 +30,17 @@ const bookCover = ref('https://kbimages1-a.akamaihd.net/38f769f0-a6f3-4361-8d7e-
 const title = ref('测试标题')
 
 const read = () => {
+
     const bdstore = bookdataStore()
+
     bdstore.$state = (estore.get(props.md5) as any)
-    // console.log(bdstore.$state);
-    router.push('/bookReader')
+
+    router.push('/bookreader')
+    // setTimeout(()=>{
+    //     console.log(1);
+        
+    // },100)
+    // ipcRenderer.send('startServer', bdstore.path);
 }
 
 onMounted(() => {

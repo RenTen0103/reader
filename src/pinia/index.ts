@@ -50,7 +50,7 @@ export const bookdataStore = defineStore('main', {
             console.log(eStore.get(this.md5));
 
 
-            this.$reset()
+            // this.$reset()
         }
     }
 })

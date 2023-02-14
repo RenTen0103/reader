@@ -14,15 +14,24 @@
 import { ipcRenderer } from 'electron';
 import path from 'path';
 import book from '../components/book.vue';
-import { onMounted, Ref, ref } from 'vue';
+import { getCurrentInstance, onMounted, Ref, ref } from 'vue';
 import { bookdataStore } from '../pinia'
 import store from 'electron-store';
+
 const list: Ref<Array<string>> = ref([])
 
+const viewer = ref(null)
+
+const tosc = ref(true)
+
+const images = ref(['https://kbimages1-a.akamaihd.net/38f769f0-a6f3-4361-8d7e-1b08cebe3867/353/569/90/False/bdBqg5F3ajO_Eua_p433vg.jpg'])
 
 onMounted(() => {
     const eStore = new store()
     const bdstore = bookdataStore()
+
+    // eStore.clear()
+    bdstore.$reset()
 
     bdstore.clrear()
     list.value = <Array<string>>eStore.get('booklist')

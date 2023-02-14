@@ -27,7 +27,8 @@ import { ipcRenderer } from 'electron';
 import { bookdataStore } from '../pinia/index';
 import { iframeUtils } from '../utils/iframeUtil';
 import ElectronStore from 'electron-store';
-import e from 'express';
+import { api as viewerApi } from 'v-viewer'
+
 
 
 const store = bookdataStore()
@@ -209,7 +210,7 @@ onBeforeUnmount(() => {
         store.storeLocal()
     }
 
-    ipcRenderer.send('stopServer')
+    // ipcRenderer.send('stopServer')
 })
 
 const reloadHistory = () => {
@@ -243,14 +244,22 @@ const reloadHistory = () => {
 
 onMounted(() => {
 
+        (window as any)._previewpic = (pic:string)=>{
+            viewerApi({images:[pic]})
+        }
 
 
-    ipcRenderer.send('startServer', store.path);
+        nextTick(()=>{
+            ipcRenderer.send('startServer', store.path);
+        });
+        
 
-    (window as any)._setMaxPageIndex = (m: number) => {
 
-        MaxPageIndex.value = m
-    }
+
+        (window as any)._setMaxPageIndex = (m: number) => {
+
+            MaxPageIndex.value = m
+        }
 
 
     (window as any)._setCurrentPageIndex = (m: number) => {
@@ -267,8 +276,6 @@ onMounted(() => {
     isPage.value = ip ? ip : false
 
     iframeAdaptive()
-
-    // store.clrear()
 
     let menuShow = false
 
@@ -406,9 +413,9 @@ onMounted(() => {
     })
 
     if (store.history.length != 0) {
-        location.value = store.rawxHtml[store.history[0]].link
+        location.value = store.rawxHtml[store.history[0]]?.link
         reloadHistory()
-    } else location.value = store.rawxHtml[0].link
+    } else location.value = store.rawxHtml[0]?.link
 
 
 

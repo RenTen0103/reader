@@ -47,9 +47,9 @@ export const eventInit = () => {
         configLoad()
     })
 
-    ipcMain.on('stopServer', () => {
-        stopServer()
-    })
+    // ipcMain.on('stopServer', () => {
+    //     stopServer()
+    // })
 
 
     ipcMain.on('contextMenu', () => {
