@@ -86,6 +86,8 @@ export const eventInit = () => {
             label: '下一页',
             accelerator: 'd',
             click: () => {
+                console.log(1);
+                
                 win.webContents.send("nextPage")
             }
         }, {

@@ -201,7 +201,15 @@ const getRecord = (dom: Element, target: Element, r: number[]) => {
 }
 
 onBeforeUnmount(() => {
-     window.removeEventListener('resize', iframeAdaptive)
+
+    ipcRenderer.removeAllListeners('nextPage')
+    ipcRenderer.removeAllListeners('prePage')
+    ipcRenderer.removeAllListeners('next')
+    ipcRenderer.removeAllListeners('pre')
+    ipcRenderer.removeAllListeners('text')
+
+
+    window.removeEventListener('resize', iframeAdaptive)
 
     let target = iu.window.document.elementFromPoint(iu.window.innerWidth / 2, 30);
     let domBody = iu.window.document.body
@@ -397,7 +405,7 @@ onMounted(() => {
     })
 
     ipcRenderer.on('nextPage', () => {
-        // console.log(1);
+        console.log(1);
 
         userChange = true
         if (isPage.value) {
@@ -405,6 +413,8 @@ onMounted(() => {
         } else nextSection()
 
     })
+
+
     ipcRenderer.on('prePage', () => {
         userChange = true
         if (isPage.value) {
