@@ -32,14 +32,41 @@ onMounted(() => {
 
     // eStore.clear()
     bdstore.$reset()
+    // console.log();
 
-    bdstore.clrear()
-    list.value = <Array<string>>eStore.get('booklist')
 
-    console.log(list.value);
+
+
+    for (const key in eStore.store) {
+        if (Object.prototype.hasOwnProperty.call(eStore.store, key)) {
+            if (key != "booklist" && key != "css" && key != "isPage" && key != 'first') {
+                const element = eStore.store[key];
+                console.log(key);
+                console.log(element);
+                list.value.push(key)
+            }
+        }
+    }
+
+
+    // bdstore.clrear()
+    // list.value = <Array<string>>eStore.get('booklist')
+
+    // console.log(list.value);
 
     ipcRenderer.on("finish", () => {
-        list.value = <Array<string>>eStore.get('booklist')
+        let nl = []
+        for (const key in eStore.store) {
+            if (Object.prototype.hasOwnProperty.call(eStore.store, key)) {
+                if (key != "booklist" && key != "css" && key != "isPage" && key != 'first') {
+                    const element = eStore.store[key];
+                    console.log(key);
+                    console.log(element);
+                    nl.push(key)
+                }
+            }
+        }
+        list.value = nl
     })
 
     const dragWrapper = document.getElementById("drag_test");

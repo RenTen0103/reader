@@ -33,24 +33,18 @@ export const bookdataStore = defineStore('main', {
 
             console.log({ ...this.$state });
 
+            if (this.md5.length != 32) {
+                console.log("MD5ERROR");
+                return
+            }
 
             eStore.set(this.md5, { ...this.$state })
 
-            if (!eStore.has('booklist')) {
-                eStore.set('booklist', [this.md5])
-            } else {
-                const bookList = <Array<string>>eStore.get('booklist')
-                if (bookList.indexOf(this.md5) == -1) {
-                    bookList.push(this.md5)
-                }
 
-                eStore.set('booklist', bookList)
-            }
 
             console.log(eStore.get(this.md5));
 
 
-            // this.$reset()
         }
     }
 })

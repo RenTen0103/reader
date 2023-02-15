@@ -25,6 +25,7 @@ export const ipcEventInit = () => {
         bdstore.path = path.dirname(p)
         dirUtiles()
         bdstore.storeLocal()
+        bdstore.$reset()
         ipcRenderer.send('readFinish')
     })
 
@@ -46,11 +47,11 @@ export const ipcEventInit = () => {
 
     ipcRenderer.on('md5', (_, md5) => {
         bookdataStore().md5 = md5
-        const booklist = <Array<string>>estore.get('booklist')
-        if (booklist && booklist.includes(md5)) {
+        if (estore.get(md5)) {
             // console.log("此书已被解析");
             ipcRenderer.send('startServer', (estore.get('md5') as any).path)
         } else {
+
             ipcRenderer.send('fileVerify')
         }
     })
