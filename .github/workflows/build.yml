@@ -37,10 +37,11 @@ jobs:
       - name: Build Release Files
         run: npm run build
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASETOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Release apk
-        uses: ncipollo/release-action@v1.5.0
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
-          artifacts: "release"
-          token: ${{ secrets.RELEASETOKEN }}
+          name: release_on_${{ matrix. os }}
+          path: release/
+          retention-days: 5

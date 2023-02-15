@@ -48,7 +48,7 @@ export class iframeUtils {
     }
 
     pager() {
-        console.log("paged");
+        // console.log("paged");
 
         (window as any)._pager = pager
         const a = ` 

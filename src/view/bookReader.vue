@@ -66,7 +66,6 @@ const tocClick = (index: number) => {
 const iframeAdaptive = () => {
 
     const r = document.getElementById('drag_test')
-    console.log(r?.clientHeight);
 
     if (r) {
         if (r.clientHeight == 0) {
@@ -77,6 +76,20 @@ const iframeAdaptive = () => {
         }
         iheight.value = r.clientHeight
         iwidth.value = r.clientWidth
+
+        const i = document.getElementsByTagName('iframe')[0]
+        let w: string | number | NodeJS.Timeout | undefined;
+        if (w) {
+            clearTimeout(w)
+        }
+
+        w = setTimeout(() => {
+            i.contentWindow?.location.reload()
+        }, 200)
+
+
+
+
     }
 }
 
@@ -115,7 +128,7 @@ const nextSection = () => {
 
     let target = decodeURI(location.value)
 
-    console.log(target);
+    // console.log(target);
 
 
     for (let index = 0; index < store.rawxHtml.length; index++) {
@@ -188,6 +201,8 @@ const getRecord = (dom: Element, target: Element, r: number[]) => {
 }
 
 onBeforeUnmount(() => {
+     window.removeEventListener('resize', iframeAdaptive)
+
     let target = iu.window.document.elementFromPoint(iu.window.innerWidth / 2, 30);
     let domBody = iu.window.document.body
     let r: number[] = [];
@@ -200,7 +215,7 @@ onBeforeUnmount(() => {
         }
     }
 
-    console.log("location:", r);
+    // console.log("location:", r);
 
     if (target != null) {
         getRecord(domBody, target, r)
@@ -244,24 +259,26 @@ const reloadHistory = () => {
 
 onMounted(() => {
 
-        (window as any)._previewpic = (pic:string)=>{
-            viewerApi({images:[pic],options:{
-                
-            }})
-        }
+    (window as any)._previewpic = (pic: string) => {
+        viewerApi({
+            images: [pic], options: {
+
+            }
+        })
+    }
 
 
-        nextTick(()=>{
-            ipcRenderer.send('startServer', store.path);
-        });
-        
+    nextTick(() => {
+        ipcRenderer.send('startServer', store.path);
+    });
 
 
 
-        (window as any)._setMaxPageIndex = (m: number) => {
 
-            MaxPageIndex.value = m
-        }
+    (window as any)._setMaxPageIndex = (m: number) => {
+
+        MaxPageIndex.value = m
+    }
 
 
     (window as any)._setCurrentPageIndex = (m: number) => {

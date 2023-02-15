@@ -9,7 +9,7 @@
 import { ipcRenderer } from 'electron';
 import { onMounted } from 'vue';
 import { configLoad } from './utils/configLoader';
-import router from './router/index';
+
 onMounted(() => {
   configLoad()
   ipcRenderer.send('ready')

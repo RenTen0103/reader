@@ -9,3 +9,7 @@ body{
   border: 0;
   font-family: pf;  
 }
+
+.viewer-footer{
+  visibility: hidden;
+}
