@@ -10,14 +10,16 @@
     "dist"
   ],
   "linux": {
-    "artifactName": "${productName}_${version}.${ext}"
+    "artifactName": "${productName}_${version}.${ext}",
+    "category": "utility",
+    "icon": "public/icons"
   },
   "mac": {
     "artifactName": "${productName}_${version}.${ext}",
     "target": [
       "dmg"
-    ],
-    "category": "Office"
+    ]
+   
   },
   "win": {
     "target": [
