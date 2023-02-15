@@ -9,11 +9,14 @@
     "dist-electron",
     "dist"
   ],
-  "mac": {
+  "linux": {
     "artifactName": "${productName}_${version}.${ext}",
     "target": [
-      "dmg"
+      ""
     ]
+  },
+  "mac": {
+    "artifactName": "${productName}_${version}.${ext}"
   },
   "win": {
     "target": [
