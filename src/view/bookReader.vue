@@ -245,7 +245,9 @@ const reloadHistory = () => {
 onMounted(() => {
 
         (window as any)._previewpic = (pic:string)=>{
-            viewerApi({images:[pic]})
+            viewerApi({images:[pic],options:{
+                
+            }})
         }
 
 
